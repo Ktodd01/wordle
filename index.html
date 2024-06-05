@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        #game {
+            display: grid;
+            grid-template-columns: repeat(5, 60px);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tile {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .correct {
+            background-color: green;
+            color: white;
+        }
+        .present {
+            background-color: yellow;
+            color: black;
+        }
+        .absent {
+            background-color: lightgray;
+        }
+        #message {
+            text-align: center;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game"></div>
+    <div id="message"></div>
+    <script>
+        const WORD = 'APPLE';
+        let currentRow = 0;
+        const game = document.getElementById('game');
+        const message = document.getElementById('message');
+
+        function createTiles() {
+            for (let i = 0; i < 30; i++) {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                tile.setAttribute('data-index', i);
+                game.appendChild(tile);
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                checkWord();
+            } else if (e.key === 'Backspace') {
+                removeLetter();
+            } else if (/^[a-zA-Z]$/.test(e.key)) {
+                addLetter(e.key.toUpperCase());
+            }
+        }
+
+        function addLetter(letter) {
+            const tiles = document.querySelectorAll('.tile');
+            for (let i = currentRow * 5; i < (currentRow + 1) * 5; i++) {
+                if (tiles[i].textContent === '') {
+                    tiles[i].textContent = letter;
+                    break;
+                }
+            }
+        }
+
+        function removeLetter() {
+            const tiles = document.querySelectorAll('.tile');
+            for (let i = (currentRow + 1) * 5 - 1; i >= currentRow * 5; i--) {
+                if (tiles[i].textContent !== '') {
+                    tiles[i].textContent = '';
+                    break;
+                }
+            }
+        }
+
+        function checkWord() {
+            const tiles = document.querySelectorAll('.tile');
+            let guess = '';
+            for (let i = currentRow * 5; i < (currentRow + 1) * 5; i++) {
+                guess += tiles[i].textContent;
+            }
+
+            if (guess.length < 5) {
+                message.textContent = 'Not enough letters';
+                return;
+            }
+
+            if (guess === WORD) {
+                for (let i = currentRow * 5; i < (currentRow + 1) * 5; i++) {
+                    tiles[i].classList.add('correct');
+                }
+                message.textContent = 'You Win!';
+                document.removeEventListener('keydown', handleKeyPress);
+                return;
+            }
+
+            for (let i = 0; i < 5; i++) {
+                if (guess[i] === WORD[i]) {
+                    tiles[currentRow * 5 + i].classList.add('correct');
+                } else if (WORD.includes(guess[i])) {
+                    tiles[currentRow * 5 + i].classList.add('present');
+                } else {
+                    tiles[currentRow * 5 + i].classList.add('absent');
+                }
+            }
+
+            currentRow++;
+            if (currentRow === 6) {
+                message.textContent = 'Game Over! The word was ' + WORD;
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyPress);
+        createTiles();
+    </script>
+</body>
+</html>
